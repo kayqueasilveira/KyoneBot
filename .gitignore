@@ -13,6 +13,9 @@
 # Config files
 /firebase.json
 
+# Outros (logs, etc.)
+*.log
+
 # Extensions
 *.zip
 *.sqlite
