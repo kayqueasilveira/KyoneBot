@@ -67,8 +67,7 @@ createCommand({
       logger.db(
         COMMAND_NAME,
         `Buscando conta LoL vinculada para ${targetUser.tag} (${targetUser.id})...`
-      );
-      // Busca a ÚNICA conta vinculada
+      ); // Busca a ÚNICA conta vinculada
       const { data: lolAccount, error: accountError } = await supabase
         .from('LoL_Accounts')
         .select<string, LoLAccount>('account_id, summoner_name')
@@ -170,7 +169,7 @@ createCommand({
       const embed = new EmbedBuilder()
         .setColor('#5865F2')
         .setAuthor({
-          name: `Histórico de Partidas de ${targetUser.username} | Conta: ${linkedSummonerName}`,
+          name: `Histórico de Partidas de ${linkedSummonerName}`,
           iconURL: targetUser.displayAvatarURL(),
         })
         .setDescription(

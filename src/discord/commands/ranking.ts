@@ -13,6 +13,7 @@ import {
 interface UserRankData {
   discordId: string;
   discordTag: string;
+  summonerName: string;
   totalGames: number;
   totalWins: number;
   totalKills: number;
@@ -29,6 +30,7 @@ interface PlayerStatsWithRelations {
   assists: number | null;
   LoL_Accounts: {
     owner_discord_id: string;
+    summoner_name: string;
     Users: {
       discord_tag: string | null;
     } | null;
@@ -89,9 +91,9 @@ createCommand({
         .from('Player_Match_Stats')
         .select<string, PlayerStatsWithRelations>(
           `
-          win, kills, deaths, assists,
-          LoL_Accounts ( owner_discord_id, Users ( discord_tag ) )
-        `
+          win, kills, deaths, assists,
+          LoL_Accounts ( owner_discord_id, summoner_name, Users ( discord_tag ) ) 
+          `
         )
         .not('LoL_Accounts', 'is', null)
         .not('LoL_Accounts.Users', 'is', null);
@@ -135,12 +137,14 @@ createCommand({
         const discordId = lolAccount.owner_discord_id;
         const discordTag =
           discordUser.discord_tag || `Usuário (${discordId.slice(0, 6)}...)`;
+        const summonerName = lolAccount.summoner_name;
 
         let userData = userStatsMap.get(discordId);
         if (!userData) {
           userData = {
             discordId: discordId,
             discordTag: discordTag,
+            summonerName: summonerName,
             totalGames: 0,
             totalWins: 0,
             totalKills: 0,
@@ -151,6 +155,10 @@ createCommand({
           };
           userStatsMap.set(discordId, userData);
         }
+        if (summonerName && userData.summonerName !== summonerName) {
+          userData.summonerName = summonerName;
+        }
+
         if (
           discordUser.discord_tag &&
           userData.discordTag !== discordUser.discord_tag
@@ -238,19 +246,20 @@ createCommand({
             : `${rank}.`;
         const winRateFormatted = `${(user.winRate * 100).toFixed(1)}%`;
         const kdaFormatted = user.kdaScore.toFixed(2);
-        const userDisplay =
-          user.discordTag !== `Usuário (${user.discordId.slice(0, 6)}...)`
-            ? `**${user.discordTag}**`
-            : `<@${user.discordId}>`;
+        const userDisplay = user.summonerName
+          ? `**${user.summonerName}**`
+          : user.discordTag !== `Usuário (${user.discordId.slice(0, 6)}...)`
+          ? `**${user.discordTag}**`
+          : `<@${user.discordId}>`;
 
         rankDescription += `${medal} ${userDisplay}\n`;
         if (rankingType === 'WINRATE') {
-          rankDescription += `   └── 🏆 WR: **${winRateFormatted}** (${
+          rankDescription += `   └── 🏆 WR: **${winRateFormatted}** (${
             user.totalWins
           }V/${user.totalGames - user.totalWins}D) | KDA: ${kdaFormatted}\n`;
         } else {
           // KDA
-          rankDescription += `   └── ⚔️ KDA: **${kdaFormatted}** (${user.totalKills}/${user.totalDeaths}/${user.totalAssists}) | WR: ${winRateFormatted}\n`;
+          rankDescription += `   └── ⚔️ KDA: **${kdaFormatted}** (${user.totalKills}/${user.totalDeaths}/${user.totalAssists}) | WR: ${winRateFormatted}\n`;
         }
       });
 

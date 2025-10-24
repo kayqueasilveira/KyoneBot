@@ -24,7 +24,7 @@ function formatKDA(kills: number, deaths: number, assists: number): string {
   return score.toFixed(2);
 }
 function calculateWinRate(wins: number, totalGames: number): string {
-  if (totalGames === 0) return 'N/A (0%)';
+  if (totalGames === 0) return '0.0%';
   return `${((wins / totalGames) * 100).toFixed(1)}%`;
 }
 // --- FIM Funções Auxiliares ---
@@ -73,8 +73,7 @@ createCommand({
       logger.db(
         COMMAND_NAME,
         `Buscando conta LoL vinculada para ${targetUser.tag} (${targetUser.id})...`
-      );
-      // Busca a ÚNICA conta vinculada
+      ); // Busca a ÚNICA conta vinculada
       const { data: lolAccount, error: accountError } = await supabase
         .from('LoL_Accounts')
         .select<string, LoLAccount>('account_id, summoner_name')
@@ -180,7 +179,7 @@ createCommand({
       const embed = new EmbedBuilder()
         .setColor('#3b82f6')
         .setAuthor({
-          name: `Perfil de ${targetUser.username} | Conta: ${linkedSummonerName}`,
+          name: `Perfil de ${linkedSummonerName}`,
           iconURL: targetUser.displayAvatarURL(),
         })
         .setTitle('Estatísticas Gerais - League of Legends')
